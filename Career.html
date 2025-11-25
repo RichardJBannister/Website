@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Career Progression: The Ascension Timeline</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom Font Import */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0d1117; /* Dark background for a 'pitch deck' feel */
+            color: #e5e7eb; /* Light text */
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem 1rem;
+            margin: 0;
+        }
+        .timeline-container {
+            max-width: 1000px;
+            width: 100%;
+        }
+        .timeline-item {
+            position: relative;
+            padding-bottom: 3rem; 
+            cursor: pointer; /* Indicate clickability */
+        }
+        /* Style the vertical line to look like a chart indicator */
+        .timeline-item:not(:last-child)::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0.5rem; 
+            width: 5px; 
+            height: 100%;
+            /* Success Green Gradient (like a stock price increase) */
+            background: linear-gradient(to bottom, #10b981, #34d399); 
+            z-index: 0;
+            border-radius: 9999px;
+            box-shadow: 0 0 15px rgba(16, 185, 129, 0.5); 
+        }
+        .dot {
+            position: absolute;
+            left: 0;
+            top: 0;
+            transform: translateX(-50%);
+            width: 1.75rem; 
+            height: 1.75rem;
+            border-radius: 50%;
+            z-index: 10;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 0 6px #0d1117; 
+            background-color: #34d399; 
+            color: #0d1117;
+        }
+
+        .card {
+            background-color: #1f2937;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 25px -5px rgba(0,0,0,0.5);
+            border: 1px solid #374151; 
+        }
+        .card:hover {
+            transform: translateY(-6px) scale(1.02); 
+            box-shadow: 0 15px 40px -5px rgba(0,0,0,0.7), 0 0 20px rgba(52, 211, 153, 0.4); 
+            background-color: #253140;
+        }
+        
+        .card h2 {
+            color: #34d399; 
+        }
+        
+        /* Custom border colors for differentiation */
+        .foundation-card { border-left-color: #3b82f6 !important; }
+        .global-card { border-left-color: #f59e0b !important; }
+        .leader-card { border-left-color: #ef4444 !important; }
+        .pause-card { border-left-color: #94a3b8 !important; }
+
+        /* Detail View Specific Styles */
+        .detail-card {
+            background-color: #1f2937;
+            padding: 2rem;
+            border-radius: 1rem;
+            border: 1px solid #374151;
+        }
+        .detail-card h1 {
+            color: #34d399;
+        }
+        .detail-card ul {
+            list-style: disc;
+            margin-left: 1.5rem;
+        }
+    </style>
+    <!-- Load Lucide Icons for aesthetic appeal -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+
+<div id="app" class="timeline-container">
+    <!-- Content will be injected here by JavaScript -->
+</div>
+
+<script>
+    // --- Application Data ---
+    const roles = [
+        {
+            id: 'role-7',
+            title: 'Relocation Career Break',
+            subtitle: 'Return to London Market',
+            years: 'Jul 2024 - Present',
+            theme: 'pause',
+            icon: 'pause',
+            label: 'STRATEGIC RELOCATION',
+            description: 'Facilitated personal relocation from Hong Kong to London where I am currently seeking new opportunities.',
+            details: [
+                'After seven years in Hong Kong, my family and I decided to relocate back to London.',
+                'To facilitate this relocation, I parted ways with Fidelity International.',
+                'Currently seeking new opportunities in London to leverage high-level portfolio implementation and leadership experience.',
+            ]
+        },
+        {
+            id: 'role-6',
+            title: 'Head of Equity Portfolio Services',
+            subtitle: 'Management of APAC Equity Implementation Team (HK, SG, TY)',
+            years: 'Jul 2022 - Jul 2024',
+            theme: 'leader',
+            icon: 'chart-spline',
+            label: 'PORTFOLIO OPTIMIZATION',
+            description: 'Senior management of multi-location teams, driving operational modernization, mitigating risk, and providing direct portfolio manager support across global accounts.',
+            details: [
+                'Management of the equity portfolio implementation team in Hong Kong, Singapore and Tokyo.',
+                'Development and mentorship of team members.',
+                'Structuring of team and duties to best align with business and client requirements.',
+                'Supporting Asia-Pacific based fund managers with their globally domiciled retail and institutional client accounts.',
+                'Managing daily trading operations on behalf of portfolio managers.',
+                'Securities trade generation to maintain portfolio target exposures, manage cash, currency and liquidity requirements.',
+                'Systematically deploying lead strategies across follower accounts.',
+                'Oversight of trade lifecycle through the execution desk and back-office functions.',
+                'Portfolio compliance oversight, including pre-trade.',
+            ]
+        },
+        {
+            id: 'role-5',
+            title: 'Head of Currency Management',
+            subtitle: 'Management of FX Implementation Team (HK)',
+            years: 'May 2019 - Jul 2022',
+            theme: 'leader',
+            icon: 'users',
+            label: 'LEADERSHIP ACQUISITION',
+            description: 'Established new FX operations team in Hong Kong following relocation from Sydney. Led implementation of fund-manager and client-driven FX strategies (Promoted to Associate Director, Apr 2021).',
+            details: [
+                'Roles and responsibilities closely aligned to the Equity portfolio implementation role, but with a focus on FX.',
+                'Occasional FX trade execution duties to support trading desk, including broker relationship management, price discovery, best execution practices and post-trade reporting.',
+                'Relocated FX operations from Sydney to Hong Kong, establishing a new team in Hong Kong.',
+                'Promoted from Senior Manager to Associate Director in April 2021.'
+            ]
+        },
+        {
+            id: 'role-4',
+            title: 'Multi Asset Implementation (Senior Analyst)',
+            subtitle: 'Relocation from London to Hong Kong',
+            years: '2017',
+            theme: 'global',
+            icon: 'globe',
+            label: 'INTERNATIONAL ARBITRAGE',
+            description: 'Demonstrated professional mobility by executing successful transition to APAC market, supporting expansion of Asia business.',
+            details: [
+                'Relocated from London to Hong Kong in 2017 to support expansion of Asia business.',
+                'Continued core responsibilities of portfolio implementation and investment operations in a new, expanding regional market.',
+            ]
+        },
+        {
+            id: 'role-3',
+            title: 'Multi Asset Implementation (Senior Analyst)',
+            subtitle: 'Portfolio Implementation and Investment Operations (Promoted Jul 2015)',
+            years: 'Apr 2013 - May 2019',
+            theme: 'foundation',
+            icon: 'target',
+            label: 'FRONT-OFFICE INTEGRATION',
+            description: 'Crucial shift to direct portfolio implementation, covering equities, fixed income, ETFs, and third-party funds.',
+            details: [
+                'Portfolio implementation and investment operations.',
+                'Trade implementation of direct equity and fixed income securities, ETFs, internal funds and third party mutual funds.',
+                'Third party trade execution by Calastone, fax and custodian portals.',
+                'Promoted from Analyst to Senior Analyst in Jul 2015.',
+            ]
+        },
+        {
+            id: 'role-2',
+            title: 'Corporate Actions (Analyst)',
+            subtitle: '',
+            years: 'Sep 2010 - Jun 2012',
+            theme: 'foundation',
+            icon: 'layers',
+            label: 'TECHNICAL DEPTH BUILD-OUT',
+            description: 'Developed highly specialized knowledge in complex and time-sensitive corporate restructuring events and their operational impact.',
+            details: [
+                'Analyst, Corporate Actions, Fidelity International.',
+                'Gained expertise in highly complex events such as mergers, acquisitions, stock splits, and dividends.',
+                'Ensured accurate and timely processing across various security types.',
+            ]
+        },
+        {
+            id: 'role-1',
+            title: 'Investment Services (Apprenticeship)',
+            subtitle: 'Cash Reconciliation & Trade Settlements',
+            years: 'Oct 2008 - Sep 2010',
+            theme: 'foundation',
+            icon: 'cog',
+            label: 'CORE INFRASTRUCTURE',
+            description: 'Mastered foundational back-office functions, ensuring accuracy and regulatory compliance—the essential operating base.',
+            details: [
+                'Apprentice, Investment Services, Fidelity International.',
+                'Focus on fundamental back-office processes.',
+                'Managed daily cash reconciliation and trade settlement tasks, establishing a strong foundation in regulatory and operational rigor.',
+            ]
+        },
+    ];
+
+    // --- Template Functions ---
+
+    // Generates the HTML for the main timeline view
+    function createTimelineView() {
+        // The roles array is already defined with the most recent role (role-7) first.
+        // We render the list top-to-bottom: Most Recent -> Oldest.
+        const timelineItems = roles.map(role => `
+            <div class="timeline-item" onclick="navigate('role', '${role.id}')">
+                <div class="dot ${role.theme === 'pause' ? 'bg-gray-500' : 'bg-green-400 text-gray-900'}"><i data-lucide="${role.icon}" class="w-5 h-5"></i></div>
+                <div class="card p-6 rounded-xl ml-6 border-l-4 ${role.theme}-card">
+                    <p class="text-xs font-semibold uppercase ${role.theme === 'leader' ? 'text-red-400' : role.theme === 'global' ? 'text-blue-400' : role.theme === 'pause' ? 'text-gray-400' : 'text-indigo-400'}">${role.label} (${role.years})</p>
+                    <h2 class="text-2xl font-bold mb-1">${role.title}</h2>
+                    ${role.subtitle ? `<p class="text-lg font-medium text-gray-300">${role.subtitle}</p>` : ''}
+                    <p class="mt-2 text-gray-400 text-sm">${role.description}</p>
+                </div>
+            </div>
+        `).join('');
+
+        return `
+            <header class="mb-12 text-center">
+                <h1 class="text-5xl font-extrabold text-[#34d399] tracking-tighter shadow-green-500/50">
+                    THE ASCENSION TIMELINE
+                </h1>
+                <p class="mt-2 text-xl text-gray-300">
+                    <i data-lucide="trending-up" class="w-6 h-6 inline-block mr-2 text-[#34d399]"></i>
+                    Career Valuation: Bull Run to Front-Office Leadership
+                </p>
+                <div class="h-1 w-32 bg-[#34d399] mx-auto mt-4 rounded-full shadow-lg shadow-[#34d399]/50"></div>
+            </header>
+            <div class="relative pl-10">
+                ${timelineItems}
+            </div>
+            <footer class="mt-12 text-center text-gray-500 text-sm">
+                <p>Click any card to drill down into the role's specific responsibilities and achievements.</p>
+            </footer>
+        `;
+    }
+
+    // Generates the HTML for a specific role detail view
+    function createDetailView(role) {
+        let borderColorClass;
+        let labelColorClass;
+        
+        // Map theme to Tailwind classes
+        switch (role.theme) {
+            case 'leader':
+                borderColorClass = 'border-red-500';
+                labelColorClass = 'text-red-400';
+                break;
+            case 'global':
+                borderColorClass = 'border-blue-500';
+                labelColorClass = 'text-blue-400';
+                break;
+            case 'pause':
+                borderColorClass = 'border-gray-500';
+                labelColorClass = 'text-gray-400';
+                break;
+            case 'foundation':
+            default:
+                borderColorClass = 'border-indigo-500';
+                labelColorClass = 'text-indigo-400';
+                break;
+        }
+
+
+        const detailsList = role.details.map(detail => `<li class="mb-2 text-gray-300">${detail}</li>`).join('');
+
+        return `
+            <div class="my-8">
+                <button 
+                    onclick="navigate('home')" 
+                    class="flex items-center text-gray-300 hover:text-[#34d399] transition mb-8 px-4 py-2 rounded-lg border border-gray-600 hover:border-[#34d399]"
+                >
+                    <i data-lucide="arrow-left" class="w-5 h-5 mr-2"></i>
+                    Back to Timeline
+                </button>
+                
+                <div class="detail-card border-l-8 ${borderColorClass}">
+                    <p class="text-sm font-semibold uppercase ${labelColorClass} mb-1">${role.label} (${role.years})</p>
+                    <h1 class="text-4xl font-extrabold mb-2 text-[#34d399]">${role.title}</h1>
+                    ${role.subtitle ? `<h3 class="text-xl font-medium text-gray-400 mb-6">${role.subtitle}</h3>` : ''}
+
+                    <div class="h-1 w-full bg-gray-700 my-6 rounded-full"></div>
+
+                    <h4 class="text-xl font-semibold text-gray-200 mb-3">Key Responsibilities & Achievements:</h4>
+                    <ul class="list-disc space-y-2 text-lg">
+                        ${detailsList}
+                    </ul>
+                </div>
+            </div>
+        `;
+    }
+
+    // --- Routing Logic ---
+
+    const app = document.getElementById('app');
+
+    function navigate(page, id) {
+        if (page === 'home') {
+            window.location.hash = '#home';
+        } else if (page === 'role' && id) {
+            window.location.hash = `#role/${id}`;
+        }
+    }
+
+    function renderPage() {
+        const hash = window.location.hash.slice(1);
+        app.innerHTML = '';
+        
+        if (!hash || hash === 'home') {
+            app.innerHTML = createTimelineView();
+        } else if (hash.startsWith('role/')) {
+            const roleId = hash.split('/')[1];
+            const role = roles.find(r => r.id === roleId);
+            
+            if (role) {
+                app.innerHTML = createDetailView(role);
+            } else {
+                app.innerHTML = `<div class="text-center text-red-500 text-2xl my-20">Error: Role not found. <button onclick="navigate('home')" class="text-blue-400 underline">Go Home</button></div>`;
+            }
+        } else {
+             // Default to home if hash is unrecognized
+             app.innerHTML = createTimelineView();
+        }
+
+        // Re-initialize icons after content injection
+        lucide.createIcons();
+        window.scrollTo(0, 0); // Scroll to top on page change
+    }
+
+    // Event listeners for routing
+    window.addEventListener('hashchange', renderPage);
+
+    // Initial load
+    window.onload = function() {
+        if (!window.location.hash) {
+            window.location.hash = '#home';
+        }
+        renderPage();
+    };
+
+</script>
+
+</body>
+</html>
