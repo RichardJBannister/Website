@@ -89,89 +89,8 @@
             margin-left: 1.5rem;
         }
 
-        /* Horizontal Timeline Styles (Career Growth Chart) */
-        .horizontal-timeline-chart {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-end; /* Align markers to the bottom */
-            position: relative;
-            padding: 0 1rem 4.5rem 1rem; /* Padding for rotated labels */
-            margin-bottom: 2rem;
-        }
-
-        /* The horizontal base line with glow */
-        .horizontal-timeline-chart::before {
-            content: '';
-            position: absolute;
-            left: 1rem;
-            right: 1rem;
-            bottom: 4.5rem; /* Positioned above the labels */
-            height: 4px;
-            background: linear-gradient(to right, #10b981, #34d399); 
-            box-shadow: 0 0 10px rgba(52, 211, 153, 0.5);
-            z-index: 1;
-        }
-
-        .chart-point {
-            position: relative;
-            z-index: 2;
-            flex: 1 1 0%; /* Equal spacing for all points */
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-
-        .chart-marker {
-            width: 1rem;
-            height: 1rem;
-            background-color: #10b981;
-            border-radius: 50%;
-            border: 3px solid #0d1117;
-            cursor: pointer;
-            transition: all 0.2s;
-            position: absolute;
-            bottom: 4.5rem; /* Match line position */
-            transform: translateY(50%);
-            box-shadow: 0 0 5px rgba(16, 185, 129, 0.7);
-        }
-
-        .chart-marker.active {
-            width: 1.5rem;
-            height: 1.5rem;
-            background-color: #34d399;
-            box-shadow: 0 0 15px rgba(52, 211, 153, 1);
-        }
-
-        /* Rotated Label Container */
-        .chart-label {
-            position: absolute;
-            bottom: 0;
-            text-align: left;
-            padding-left: 1rem; /* Adjust pivot point for rotation */
-            transform-origin: 0% 100%; /* Pivot point at the bottom left */
-            transform: rotate(-45deg); /* 45 degree rotation */
-            white-space: nowrap;
-            cursor: pointer;
-            transition: color 0.2s, transform 0.2s;
-            line-height: 1.2;
-            color: #9ca3af;
-        }
-
-        .chart-label:hover {
-            color: #e5e7eb;
-        }
-
-        .chart-label.active {
-            color: #34d399;
-            font-weight: bold;
-            font-size: 1.05rem; /* Larger font for active */
-            transform: rotate(-45deg) scale(1.1); /* Slight bump up */
-        }
-
-        .label-date {
-            font-size: 0.75rem; /* text-xs */
-            color: #4b5563; /* text-gray-600 */
-        }
+        /* The horizontal timeline CSS has been removed */
+        /* and replaced with Flexbox/Tailwind in createDetailView/createSidebarNavigation */
     </style>
     <!-- Load Lucide Icons for aesthetic appeal -->
     <script src="https://unpkg.com/lucide@latest"></script>
@@ -198,15 +117,6 @@
         { border: 'border-pink-500', text: 'text-pink-400' },     
         { border: 'border-fuchsia-500', text: 'text-fuchsia-400' },
     ];
-
-    // --- Career Level Map (Used only for vertical placement in the old SVG, kept for context) ---
-    // For this simplified line, we don't need distinct Y levels, but we can reuse the theme for color/emphasis if needed.
-    const CAREER_LEVELS = {
-        'foundation': 1,
-        'global': 2,
-        'leader': 3,
-        'pause': 4
-    };
 
     // --- Application Data ---
     const roles = [
@@ -428,43 +338,43 @@
     }
     
     /**
-     * Generates the horizontal summary timeline using a responsive Flexbox layout 
-     * with rotated labels to save space.
+     * Generates the vertical sidebar navigation using a responsive list layout 
+     * with horizontal labels, positioned oldest-to-newest.
      */
-    function createHorizontalTimeline(currentRoleId) {
-        // Reverse the roles array to display oldest (role-1) on the left to newest (role-11) on the right.
+    function createSidebarNavigation(currentRoleId) {
+        // Reverse the roles array to display oldest (role-1) on the top to newest (role-11) on the bottom.
         const chronologicalRoles = [...roles].reverse(); 
 
-        const chartPoints = chronologicalRoles.map(role => {
+        const navItems = chronologicalRoles.map(role => {
             const isActive = role.id === currentRoleId;
             // Clean up titles for the summary view
             const title = role.title.replace(/ *\([^)]*\) */g, "").trim(); 
             const year = role.years.split('-')[0].trim();
             
+            const activeClass = isActive 
+                ? 'bg-gray-800 border-l-4 border-[#34d399] text-[#34d399] font-bold shadow-lg' 
+                : 'text-gray-400 hover:bg-gray-700 hover:text-white border-l-4 border-transparent';
+            
             return `
-                <div class="chart-point">
-                    <!-- Marker on the Line -->
-                    <div 
-                        class="chart-marker ${isActive ? 'active' : ''}" 
-                        onclick="navigate('role', '${role.id}')"
-                    ></div>
-                    
-                    <!-- Rotated Label -->
-                    <div 
-                        class="chart-label ${isActive ? 'active' : ''}" 
-                        onclick="navigate('role', '${role.id}')"
+                <li class="mb-1">
+                    <a href="#role/${role.id}" 
+                       class="block p-3 rounded-r-lg transition-all duration-200 ${activeClass}" 
+                       onclick="event.preventDefault(); navigate('role', '${role.id}')"
                     >
-                        <span class="label-date">${year}</span><br>
-                        <span class="font-medium">${title}</span>
-                    </div>
-                </div>
+                        <span class="text-xs uppercase text-gray-500 block">${year}</span>
+                        <span class="text-sm">${title}</span>
+                    </a>
+                </li>
             `;
         }).join('');
 
         return `
-            <div class="horizontal-timeline-chart w-full">
-                ${chartPoints}
-            </div>
+            <nav class="p-2 sticky top-4">
+                <h3 class="text-lg font-semibold text-gray-400 mb-4 ml-3 hidden lg:block">Career History</h3>
+                <ul class="space-y-1">
+                    ${navItems}
+                </ul>
+            </nav>
         `;
     }
 
@@ -482,33 +392,44 @@
         const detailsList = role.details.map(detail => `<li class="mb-2 text-gray-300">${detail}</li>`).join('');
 
         return `
-            <div class="my-8">
-                <!-- Horizontal Timeline Chart -->
-                ${createHorizontalTimeline(role.id)}
-
+            <div class="my-8 w-full max-w-7xl mx-auto px-4">
+                
+                <!-- Back Button -->
                 <button 
                     onclick="navigate('home')" 
-                    class="flex items-center text-gray-300 hover:text-[#34d399] transition mb-8 px-4 py-2 rounded-lg border border-gray-600 hover:border-[#34d399]"
+                    class="flex items-center text-gray-300 hover:text-[#34d399] transition mb-6 px-4 py-2 rounded-lg border border-gray-600 hover:border-[#34d399]"
                 >
                     <i data-lucide="arrow-left" class="w-5 h-5 mr-2"></i>
-                    Back to Timeline
+                    Back to Main Timeline
                 </button>
-                
-                <div class="detail-card border-l-8 ${borderColorClass}">
-                    <p class="text-sm font-semibold uppercase ${labelColorClass} mb-1">${role.label} (${role.years})</p>
-                    <h1 class="text-4xl font-extrabold mb-2 text-[#34d399] flex items-center">
-                        <!-- Placeholder Logo - Always theme green -->
-                        <i data-lucide="line-chart" class="w-8 h-8 mr-3 text-[#34d399]"></i> 
-                        ${role.title}
-                    </h1>
-                    ${role.subtitle ? `<h3 class="text-xl font-medium text-gray-400 mb-6">${role.subtitle}</h3>` : ''}
 
-                    <div class="h-1 w-full bg-gray-700 my-6 rounded-full"></div>
+                <!-- Two-Column Layout for Detail View -->
+                <div class="flex flex-col lg:flex-row gap-8">
+                    <!-- LEFT SIDEBAR (Navigation) -->
+                    <!-- Sticky top-4 keeps the nav in place when scrolling the main content -->
+                    <div class="lg:w-1/4 max-w-xs lg:min-w-64">
+                        ${createSidebarNavigation(role.id)}
+                    </div>
 
-                    <h4 class="text-xl font-semibold text-gray-200 mb-3">Key Responsibilities & Achievements:</h4>
-                    <ul class="list-disc space-y-2 text-lg">
-                        ${detailsList}
-                    </ul>
+                    <!-- RIGHT MAIN CONTENT (Details) -->
+                    <div class="flex-1 min-w-0">
+                        <div class="detail-card border-l-8 ${borderColorClass}">
+                            <p class="text-sm font-semibold uppercase ${labelColorClass} mb-1">${role.label} (${role.years})</p>
+                            <h1 class="text-4xl font-extrabold mb-2 text-[#34d399] flex items-center">
+                                <!-- Placeholder Logo - Always theme green -->
+                                <i data-lucide="line-chart" class="w-8 h-8 mr-3 text-[#34d399]"></i> 
+                                ${role.title}
+                            </h1>
+                            ${role.subtitle ? `<h3 class="text-xl font-medium text-gray-400 mb-6">${role.subtitle}</h3>` : ''}
+
+                            <div class="h-1 w-full bg-gray-700 my-6 rounded-full"></div>
+
+                            <h4 class="text-xl font-semibold text-gray-200 mb-3">Key Responsibilities & Achievements:</h4>
+                            <ul class="list-disc space-y-2 text-lg">
+                                ${detailsList}
+                            </ul>
+                        </div>
+                    </div>
                 </div>
             </div>
         `;
@@ -533,16 +454,16 @@
         if (!hash || hash === 'home') {
             // Reset container class for the main timeline view
             app.classList.add('timeline-container');
-            app.classList.remove('max-w-7xl', 'w-full', 'px-4');
+            app.classList.remove('w-full');
             app.innerHTML = createTimelineView();
         } else if (hash.startsWith('role/')) {
             const roleId = hash.split('/')[1];
             const role = roles.find(r => r.id === roleId);
             
             if (role) {
-                // Ensure the container is wider for the horizontal timeline chart
+                // Adjust container class for the detail view
                 app.classList.remove('timeline-container');
-                app.classList.add('max-w-7xl', 'w-full', 'px-4'); 
+                app.classList.add('w-full'); 
                 app.innerHTML = createDetailView(role);
             } else {
                 app.innerHTML = `<div class="text-center text-red-500 text-2xl my-20">Error: Role not found. <button onclick="navigate('home')" class="text-blue-400 underline">Go Home</button></div>`;
@@ -550,7 +471,7 @@
         } else {
              // Default to home if hash is unrecognized
              app.classList.add('timeline-container');
-             app.classList.remove('max-w-7xl', 'w-full', 'px-4');
+             app.classList.remove('w-full');
              app.innerHTML = createTimelineView();
         }
 
