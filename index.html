@@ -122,7 +122,7 @@
     const roles = [
         {
             id: 'role-11',
-            title: 'Seeking Next Opportunity',
+            title: 'Seeking Next Opportunity', // UPDATED
             subtitle: 'Leveraging Leadership and Implementation Experience',
             years: 'Present',
             theme: 'pause',
@@ -137,7 +137,7 @@
         },
         {
             id: 'role-10',
-            title: 'Relocation Career Break',
+            title: 'Relocation Career Break', // UPDATED
             subtitle: 'Strategic Move to London',
             years: 'Jul 2024 - Present',
             theme: 'pause',
@@ -151,7 +151,7 @@
         },
         {
             id: 'role-9',
-            title: 'Head of Equity Portfolio Services (APAC)',
+            title: 'Equity Implementation (Head of APAC)', // UPDATED
             subtitle: 'Senior Leadership of Equity Implementation Teams (HK, SG, TY)',
             years: 'Jul 2022 - Jul 2024',
             theme: 'leader',
@@ -168,7 +168,7 @@
         },
         {
             id: 'role-8',
-            title: 'FX Implementation (Head of APAC)',
+            title: 'FX Implementation (Head of APAC)', // UPDATED
             subtitle: 'Promoted to Associate Director',
             years: 'Apr 2021 - Jul 2022',
             theme: 'leader',
@@ -183,7 +183,7 @@
         },
         {
             id: 'role-7',
-            title: 'FX Implementation (Senior Manager)',
+            title: 'FX Implementation (Senior Manager)', // UPDATED
             subtitle: 'Establishment of FX Operations Team in Hong Kong',
             years: 'May 2019 - Apr 2021',
             theme: 'leader',
@@ -199,7 +199,7 @@
         },
         {
             id: 'role-6',
-            title: 'Multi-Asset Implementation (Senior Analyst, Relocation)',
+            title: 'Multi-Asset Implementation (Senior Analyst APAC)', // UPDATED
             subtitle: 'Transition to Hong Kong',
             years: 'Jan 2017 - May 2019',
             theme: 'global',
@@ -214,7 +214,7 @@
         },
         {
             id: 'role-5',
-            title: 'Multi-Asset Implementation (Senior Analyst)',
+            title: 'Multi-Asset Implementation (Senior Analyst)', // UPDATED
             subtitle: 'First Promotion to Senior Analyst',
             years: 'Jul 2015 - Dec 2016',
             theme: 'foundation',
@@ -229,7 +229,7 @@
         },
         {
             id: 'role-4',
-            title: 'Multi-Asset Implementation (Analyst)',
+            title: 'Multi-Asset Implementation (Analyst)', // UPDATED
             subtitle: 'Crucial Shift to the Front-Office',
             years: 'Apr 2013 - Jun 2015',
             theme: 'foundation',
@@ -245,7 +245,7 @@
         },
         {
             id: 'role-3',
-            title: 'Cash Reconciliations (Analyst)',
+            title: 'Cash Reconciliations (Analyst)', // UPDATED
             subtitle: 'Refining Back-Office Rigor',
             years: 'Sep 2012 - Mar 2013',
             theme: 'foundation',
@@ -260,7 +260,7 @@
         },
         {
             id: 'role-2',
-            title: 'Corporate Actions (Analyst)',
+            title: 'Corporate Actions (Analyst)', // UPDATED
             subtitle: 'Technical Depth Build-Out',
             years: 'Sep 2010 - Aug 2012',
             theme: 'foundation',
@@ -275,7 +275,7 @@
         },
         {
             id: 'role-1',
-            title: 'Investment Services (Apprenticeship)',
+            title: 'Investment Services (Apprenticeship)', // UPDATED
             subtitle: 'Core Infrastructure & Trade Settlements',
             years: 'Oct 2008 - Aug 2010',
             theme: 'foundation',
@@ -339,16 +339,23 @@
     
     /**
      * Generates the vertical sidebar navigation using a responsive list layout 
-     * with horizontal labels, positioned oldest-to-newest.
+     * with horizontal labels, positioned newest-to-oldest.
+     * * This function now extracts the role modifier (seniority) and displays it separately.
      */
     function createSidebarNavigation(currentRoleId) {
-        // Reverse the roles array to display oldest (role-1) on the top to newest (role-11) on the bottom.
-        const chronologicalRoles = [...roles].reverse(); 
+        // Use the original roles array, which is already defined newest-to-oldest (Role 11 at top, Role 1 at bottom).
+        const chronologicalRoles = roles; 
 
         const navItems = chronologicalRoles.map(role => {
             const isActive = role.id === currentRoleId;
-            // Clean up titles for the summary view
-            const title = role.title.replace(/ *\([^)]*\) */g, "").trim(); 
+
+            // 1. Extract content inside parentheses (the seniority/modifier)
+            const modifierMatch = role.title.match(/\(([^)]+)\)/);
+            const modifier = modifierMatch ? modifierMatch[1].trim() : '';
+
+            // 2. Get the clean title (everything before the parenthesis, or the whole title if no parenthesis)
+            const baseTitle = role.title.replace(/\s*\([^)]+\)/, '').trim(); 
+            
             const year = role.years.split('-')[0].trim();
             
             const activeClass = isActive 
@@ -362,7 +369,8 @@
                        onclick="event.preventDefault(); navigate('role', '${role.id}')"
                     >
                         <span class="text-xs uppercase text-gray-500 block">${year}</span>
-                        <span class="text-sm">${title}</span>
+                        <span class="text-sm">${baseTitle}</span>
+                        ${modifier ? `<span class="text-xs italic text-gray-500 block ${isActive ? 'text-gray-400' : ''}">${modifier}</span>` : ''}
                     </a>
                 </li>
             `;
@@ -451,27 +459,24 @@
         const hash = window.location.hash.slice(1);
         app.innerHTML = '';
         
+        // Reset container classes (important for mobile/desktop layouts)
+        const isDetailView = hash.startsWith('role/');
+        app.classList.toggle('timeline-container', !isDetailView);
+        app.classList.toggle('w-full', isDetailView);
+
         if (!hash || hash === 'home') {
-            // Reset container class for the main timeline view
-            app.classList.add('timeline-container');
-            app.classList.remove('w-full');
             app.innerHTML = createTimelineView();
-        } else if (hash.startsWith('role/')) {
+        } else if (isDetailView) {
             const roleId = hash.split('/')[1];
             const role = roles.find(r => r.id === roleId);
             
             if (role) {
-                // Adjust container class for the detail view
-                app.classList.remove('timeline-container');
-                app.classList.add('w-full'); 
                 app.innerHTML = createDetailView(role);
             } else {
                 app.innerHTML = `<div class="text-center text-red-500 text-2xl my-20">Error: Role not found. <button onclick="navigate('home')" class="text-blue-400 underline">Go Home</button></div>`;
             }
         } else {
              // Default to home if hash is unrecognized
-             app.classList.add('timeline-container');
-             app.classList.remove('w-full');
              app.innerHTML = createTimelineView();
         }
 
