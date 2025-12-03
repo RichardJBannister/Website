@@ -23,12 +23,12 @@
             max-width: 1000px;
             width: 100%;
         }
+        /* Vertical Timeline Styles (Main View) */
         .timeline-item {
             position: relative;
             padding-bottom: 3rem; 
-            cursor: pointer; /* Indicate clickability */
+            cursor: pointer;
         }
-        /* Style the vertical line to look like a chart indicator */
         .timeline-item:not(:last-child)::before {
             content: '';
             position: absolute;
@@ -36,7 +36,6 @@
             left: 0.5rem; 
             width: 5px; 
             height: 100%;
-            /* Success Green Gradient (like a stock price increase) */
             background: linear-gradient(to bottom, #10b981, #34d399); 
             z-index: 0;
             border-radius: 9999px;
@@ -55,8 +54,8 @@
             align-items: center;
             justify-content: center;
             box-shadow: 0 0 0 6px #0d1117; 
-            background-color: #34d399; 
-            color: #0d1117;
+            background-color: #34d399;
+            color: #0d1117; 
         }
 
         .card {
@@ -75,12 +74,6 @@
             color: #34d399; 
         }
         
-        /* Custom border colors for differentiation */
-        .foundation-card { border-left-color: #3b82f6 !important; }
-        .global-card { border-left-color: #f59e0b !important; }
-        .leader-card { border-left-color: #ef4444 !important; }
-        .pause-card { border-left-color: #94a3b8 !important; }
-
         /* Detail View Specific Styles */
         .detail-card {
             background-color: #1f2937;
@@ -95,6 +88,90 @@
             list-style: disc;
             margin-left: 1.5rem;
         }
+
+        /* Horizontal Timeline Styles (Career Growth Chart) */
+        .horizontal-timeline-chart {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end; /* Align markers to the bottom */
+            position: relative;
+            padding: 0 1rem 4.5rem 1rem; /* Padding for rotated labels */
+            margin-bottom: 2rem;
+        }
+
+        /* The horizontal base line with glow */
+        .horizontal-timeline-chart::before {
+            content: '';
+            position: absolute;
+            left: 1rem;
+            right: 1rem;
+            bottom: 4.5rem; /* Positioned above the labels */
+            height: 4px;
+            background: linear-gradient(to right, #10b981, #34d399); 
+            box-shadow: 0 0 10px rgba(52, 211, 153, 0.5);
+            z-index: 1;
+        }
+
+        .chart-point {
+            position: relative;
+            z-index: 2;
+            flex: 1 1 0%; /* Equal spacing for all points */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .chart-marker {
+            width: 1rem;
+            height: 1rem;
+            background-color: #10b981;
+            border-radius: 50%;
+            border: 3px solid #0d1117;
+            cursor: pointer;
+            transition: all 0.2s;
+            position: absolute;
+            bottom: 4.5rem; /* Match line position */
+            transform: translateY(50%);
+            box-shadow: 0 0 5px rgba(16, 185, 129, 0.7);
+        }
+
+        .chart-marker.active {
+            width: 1.5rem;
+            height: 1.5rem;
+            background-color: #34d399;
+            box-shadow: 0 0 15px rgba(52, 211, 153, 1);
+        }
+
+        /* Rotated Label Container */
+        .chart-label {
+            position: absolute;
+            bottom: 0;
+            text-align: left;
+            padding-left: 1rem; /* Adjust pivot point for rotation */
+            transform-origin: 0% 100%; /* Pivot point at the bottom left */
+            transform: rotate(-45deg); /* 45 degree rotation */
+            white-space: nowrap;
+            cursor: pointer;
+            transition: color 0.2s, transform 0.2s;
+            line-height: 1.2;
+            color: #9ca3af;
+        }
+
+        .chart-label:hover {
+            color: #e5e7eb;
+        }
+
+        .chart-label.active {
+            color: #34d399;
+            font-weight: bold;
+            font-size: 1.05rem; /* Larger font for active */
+            transform: rotate(-45deg) scale(1.1); /* Slight bump up */
+        }
+
+        .label-date {
+            font-size: 0.75rem; /* text-xs */
+            color: #4b5563; /* text-gray-600 */
+        }
     </style>
     <!-- Load Lucide Icons for aesthetic appeal -->
     <script src="https://unpkg.com/lucide@latest"></script>
@@ -106,139 +183,229 @@
 </div>
 
 <script>
+    // --- Rainbow Color Palette ---
+    // Defined 11 distinct colors for the 11 roles
+    const RAINBOW_COLORS = [
+        { border: 'border-red-500', text: 'text-red-400' },       
+        { border: 'border-orange-500', text: 'text-orange-400' }, 
+        { border: 'border-yellow-500', text: 'text-yellow-400' }, 
+        { border: 'border-lime-500', text: 'text-lime-400' },     
+        { border: 'border-teal-500', text: 'text-teal-400' },     
+        { border: 'border-sky-500', text: 'text-sky-400' },       
+        { border: 'border-blue-500', text: 'text-blue-400' },     
+        { border: 'border-indigo-500', text: 'text-indigo-400' }, 
+        { border: 'border-purple-500', text: 'text-purple-400' }, 
+        { border: 'border-pink-500', text: 'text-pink-400' },     
+        { border: 'border-fuchsia-500', text: 'text-fuchsia-400' },
+    ];
+
+    // --- Career Level Map (Used only for vertical placement in the old SVG, kept for context) ---
+    // For this simplified line, we don't need distinct Y levels, but we can reuse the theme for color/emphasis if needed.
+    const CAREER_LEVELS = {
+        'foundation': 1,
+        'global': 2,
+        'leader': 3,
+        'pause': 4
+    };
+
     // --- Application Data ---
     const roles = [
         {
-            id: 'role-7',
+            id: 'role-11',
+            title: 'Seeking Next Opportunity',
+            subtitle: 'Leveraging Leadership and Implementation Experience',
+            years: 'Present',
+            theme: 'pause',
+            icon: 'search',
+            label: 'CURRENT FOCUS',
+            description: 'Actively seeking a new London-based role to apply senior management, portfolio implementation, and operational transformation expertise.',
+            details: [
+                'Actively networking and interviewing for senior roles within the London investment management market.',
+                'Targeting positions that require a deep understanding of the investment lifecycle from front-office implementation through to operations.',
+                'Utilizing time to refresh market knowledge and compliance understanding relevant to the UK/European region.',
+            ]
+        },
+        {
+            id: 'role-10',
             title: 'Relocation Career Break',
-            subtitle: 'Return to London Market',
+            subtitle: 'Strategic Move to London',
             years: 'Jul 2024 - Present',
             theme: 'pause',
             icon: 'pause',
             label: 'STRATEGIC RELOCATION',
-            description: 'Facilitated personal relocation from Hong Kong to London where I am currently seeking new opportunities.',
+            description: 'Facilitated personal relocation from Hong Kong to London to return to the UK market.',
             details: [
                 'After seven years in Hong Kong, my family and I decided to relocate back to London.',
-                'To facilitate this relocation, I parted ways with Fidelity International.',
-                'Currently seeking new opportunities in London to leverage high-level portfolio implementation and leadership experience.',
+                'Parted ways with Fidelity International to facilitate a smooth international transition.',
             ]
         },
         {
-            id: 'role-6',
-            title: 'Head of Equity Portfolio Services',
-            subtitle: 'Management of APAC Equity Implementation Team (HK, SG, TY)',
+            id: 'role-9',
+            title: 'Head of Equity Portfolio Services (APAC)',
+            subtitle: 'Senior Leadership of Equity Implementation Teams (HK, SG, TY)',
             years: 'Jul 2022 - Jul 2024',
             theme: 'leader',
             icon: 'chart-spline',
             label: 'PORTFOLIO OPTIMIZATION',
             description: 'Senior management of multi-location teams, driving operational modernization, mitigating risk, and providing direct portfolio manager support across global accounts.',
             details: [
-                'Management of the equity portfolio implementation team in Hong Kong, Singapore and Tokyo.',
-                'Development and mentorship of team members.',
-                'Structuring of team and duties to best align with business and client requirements.',
-                'Supporting Asia-Pacific based fund managers with their globally domiciled retail and institutional client accounts.',
-                'Managing daily trading operations on behalf of portfolio managers.',
-                'Securities trade generation to maintain portfolio target exposures, manage cash, currency and liquidity requirements.',
-                'Systematically deploying lead strategies across follower accounts.',
-                'Oversight of trade lifecycle through the execution desk and back-office functions.',
-                'Portfolio compliance oversight, including pre-trade.',
+                'Senior leadership of the equity portfolio implementation team across Hong Kong, Singapore and Tokyo.',
+                'Drove systematic deployment of lead strategies across follower accounts, ensuring precision and consistency.',
+                'Managed daily trading operations, including securities trade generation to maintain portfolio targets, cash, currency, and liquidity requirements.',
+                'Oversight of portfolio compliance (pre-trade) and the full trade lifecycle through the execution desk and back-office functions.',
+                'Development and mentorship of team members, structuring duties to align with business and client requirements.',
+            ]
+        },
+        {
+            id: 'role-8',
+            title: 'FX Implementation (Head of APAC)',
+            subtitle: 'Promoted to Associate Director',
+            years: 'Apr 2021 - Jul 2022',
+            theme: 'leader',
+            icon: 'trending-up',
+            label: 'DIRECTORSHIP & GROWTH',
+            description: 'Promotion reflecting expanded scope and successful delivery of FX operational stability and strategy execution across Asia Pacific.',
+            details: [
+                'Promoted from Senior Manager to Associate Director in April 2021.',
+                'Continued leadership over FX implementation team and strategy deployment.',
+                'Key focus on developing broker relationship management, price discovery, and best execution practices for FX trading.',
+            ]
+        },
+        {
+            id: 'role-7',
+            title: 'FX Implementation (Senior Manager)',
+            subtitle: 'Establishment of FX Operations Team in Hong Kong',
+            years: 'May 2019 - Apr 2021',
+            theme: 'leader',
+            icon: 'users',
+            label: 'LEADERSHIP ACQUISITION',
+            description: 'Established and led the new FX operations team in Hong Kong following relocation from Sydney.',
+            details: [
+                'Established and led the new FX operations team in Hong Kong following relocation from Sydney.',
+                'Led implementation of fund-manager and client-driven FX strategies (hedges, overlays).',
+                'Responsibilities closely aligned to the Equity portfolio implementation role, but with a sole focus on FX.',
+                'Occasional FX trade execution duties to support the trading desk and ensure best practice implementation.',
+            ]
+        },
+        {
+            id: 'role-6',
+            title: 'Multi-Asset Implementation (Senior Analyst, Relocation)',
+            subtitle: 'Transition to Hong Kong',
+            years: 'Jan 2017 - May 2019',
+            theme: 'global',
+            icon: 'globe',
+            label: 'INTERNATIONAL ARBITRAGE',
+            description: 'Executed successful professional transition from London to APAC, supporting expansion of the regional business and maintaining core front-office duties.',
+            details: [
+                'Relocated from London to Hong Kong in January 2017 to support expansion of Asia business.',
+                'Continued core responsibilities of portfolio implementation and investment operations in a new, expanding regional market.',
+                'Seamless transition ensuring continuity of service to portfolio managers during international transfer.',
             ]
         },
         {
             id: 'role-5',
-            title: 'Head of Currency Management',
-            subtitle: 'Management of FX Implementation Team (HK)',
-            years: 'May 2019 - Jul 2022',
-            theme: 'leader',
-            icon: 'users',
-            label: 'LEADERSHIP ACQUISITION',
-            description: 'Established new FX operations team in Hong Kong following relocation from Sydney. Led implementation of fund-manager and client-driven FX strategies (Promoted to Associate Director, Apr 2021).',
+            title: 'Multi-Asset Implementation (Senior Analyst)',
+            subtitle: 'First Promotion to Senior Analyst',
+            years: 'Jul 2015 - Dec 2016',
+            theme: 'foundation',
+            icon: 'award',
+            label: 'PROMOTION & SCOPE',
+            description: 'Recognition of expertise leading to promotion; focused on expanding trade implementation scope and improving operational efficiency.',
             details: [
-                'Roles and responsibilities closely aligned to the Equity portfolio implementation role, but with a focus on FX.',
-                'Occasional FX trade execution duties to support trading desk, including broker relationship management, price discovery, best execution practices and post-trade reporting.',
-                'Relocated FX operations from Sydney to Hong Kong, establishing a new team in Hong Kong.',
-                'Promoted from Senior Manager to Associate Director in April 2021.'
+                'Promoted from Analyst to Senior Analyst in July 2015.',
+                'Increased responsibility for complex trade implementation and oversight across a wider range of asset classes.',
+                'Acted as a key point of contact between portfolio managers and the execution desk.',
             ]
         },
         {
             id: 'role-4',
-            title: 'Multi Asset Implementation (Senior Analyst)',
-            subtitle: 'Relocation from London to Hong Kong',
-            years: '2017',
-            theme: 'global',
-            icon: 'globe',
-            label: 'INTERNATIONAL ARBITRAGE',
-            description: 'Demonstrated professional mobility by executing successful transition to APAC market, supporting expansion of Asia business.',
-            details: [
-                'Relocated from London to Hong Kong in 2017 to support expansion of Asia business.',
-                'Continued core responsibilities of portfolio implementation and investment operations in a new, expanding regional market.',
-            ]
-        },
-        {
-            id: 'role-3',
-            title: 'Multi Asset Implementation (Senior Analyst)',
-            subtitle: 'Portfolio Implementation and Investment Operations (Promoted Jul 2015)',
-            years: 'Apr 2013 - May 2019',
+            title: 'Multi-Asset Implementation (Analyst)',
+            subtitle: 'Crucial Shift to the Front-Office',
+            years: 'Apr 2013 - Jun 2015',
             theme: 'foundation',
             icon: 'target',
             label: 'FRONT-OFFICE INTEGRATION',
             description: 'Crucial shift to direct portfolio implementation, covering equities, fixed income, ETFs, and third-party funds.',
             details: [
-                'Portfolio implementation and investment operations.',
-                'Trade implementation of direct equity and fixed income securities, ETFs, internal funds and third party mutual funds.',
-                'Third party trade execution by Calastone, fax and custodian portals.',
-                'Promoted from Analyst to Senior Analyst in Jul 2015.',
+                'Successfully transitioned into a front-office support function focused on trade implementation.',
+                'Executed trades for direct equity and fixed income securities, ETFs, internal funds and third party mutual funds.',
+                'Managed third party trade execution via platforms like Calastone, fax and custodian portals.',
+                'Ensured accurate portfolio positioning against target exposures.',
+            ]
+        },
+        {
+            id: 'role-3',
+            title: 'Cash Reconciliations (Analyst)',
+            subtitle: 'Refining Back-Office Rigor',
+            years: 'Sep 2012 - Mar 2013',
+            theme: 'foundation',
+            icon: 'currency',
+            label: 'FINANCIAL ACCURACY',
+            description: 'Focused period on ensuring financial integrity through advanced daily cash reconciliation processes.',
+            details: [
+                'Analyst focusing solely on cash management and reconciliation.',
+                'Responsible for complex currency and transaction reconciliation across multi-jurisdictional accounts.',
+                'Mitigated operational risk by ensuring timely and accurate cash positioning.',
             ]
         },
         {
             id: 'role-2',
             title: 'Corporate Actions (Analyst)',
-            subtitle: '',
-            years: 'Sep 2010 - Jun 2012',
+            subtitle: 'Technical Depth Build-Out',
+            years: 'Sep 2010 - Aug 2012',
             theme: 'foundation',
             icon: 'layers',
-            label: 'TECHNICAL DEPTH BUILD-OUT',
+            label: 'SPECIALIZED KNOWLEDGE',
             description: 'Developed highly specialized knowledge in complex and time-sensitive corporate restructuring events and their operational impact.',
             details: [
-                'Analyst, Corporate Actions, Fidelity International.',
                 'Gained expertise in highly complex events such as mergers, acquisitions, stock splits, and dividends.',
-                'Ensured accurate and timely processing across various security types.',
+                'Ensured accurate and timely processing across various security types and markets.',
+                'Responsible for communicating corporate action impacts to fund managers and other internal stakeholders.',
             ]
         },
         {
             id: 'role-1',
             title: 'Investment Services (Apprenticeship)',
-            subtitle: 'Cash Reconciliation & Trade Settlements',
-            years: 'Oct 2008 - Sep 2010',
+            subtitle: 'Core Infrastructure & Trade Settlements',
+            years: 'Oct 2008 - Aug 2010',
             theme: 'foundation',
             icon: 'cog',
             label: 'CORE INFRASTRUCTURE',
-            description: 'Mastered foundational back-office functions, ensuring accuracy and regulatory compliance—the essential operating base.',
+            description: 'Mastered foundational back-office functions, establishing a strong base in regulatory and operational rigor.',
             details: [
                 'Apprentice, Investment Services, Fidelity International.',
                 'Focus on fundamental back-office processes.',
-                'Managed daily cash reconciliation and trade settlement tasks, establishing a strong foundation in regulatory and operational rigor.',
+                'Managed daily cash reconciliation and trade settlement tasks, ensuring high levels of accuracy and regulatory compliance.',
+                'Established a comprehensive understanding of the full trade lifecycle.',
             ]
         },
     ];
 
     // --- Template Functions ---
 
-    // Generates the HTML for the main timeline view
+    // Generates the HTML for the main timeline view (Vertical)
     function createTimelineView() {
-        // The roles array is already defined with the most recent role (role-7) first.
-        // We render the list top-to-bottom: Most Recent -> Oldest.
-        const timelineItems = roles.map(role => `
-            <div class="timeline-item" onclick="navigate('role', '${role.id}')">
-                <div class="dot ${role.theme === 'pause' ? 'bg-gray-500' : 'bg-green-400 text-gray-900'}"><i data-lucide="${role.icon}" class="w-5 h-5"></i></div>
-                <div class="card p-6 rounded-xl ml-6 border-l-4 ${role.theme}-card">
-                    <p class="text-xs font-semibold uppercase ${role.theme === 'leader' ? 'text-red-400' : role.theme === 'global' ? 'text-blue-400' : role.theme === 'pause' ? 'text-gray-400' : 'text-indigo-400'}">${role.label} (${role.years})</p>
-                    <h2 class="text-2xl font-bold mb-1">${role.title}</h2>
-                    ${role.subtitle ? `<p class="text-lg font-medium text-gray-300">${role.subtitle}</p>` : ''}
-                    <p class="mt-2 text-gray-400 text-sm">${role.description}</p>
+        // The roles array is defined newest-to-oldest, which is correct for the vertical timeline.
+        const timelineItems = roles.map((role, index) => {
+            // Use index and modulo to cycle through the color palette for the rainbow effect
+            const color = RAINBOW_COLORS[index % RAINBOW_COLORS.length];
+            
+            return `
+                <div class="timeline-item" onclick="navigate('role', '${role.id}')">
+                    <!-- DOT -->
+                    <div class="dot"><i data-lucide="${role.icon}" class="w-5 h-5"></i></div>
+                    <div class="card p-6 rounded-xl ml-6 border-l-4 ${color.border}">
+                        <p class="text-xs font-semibold uppercase ${color.text}">${role.label} (${role.years})</p>
+                        <h2 class="text-2xl font-bold mb-1 flex items-center">
+                            <i data-lucide="line-chart" class="w-6 h-6 mr-3 text-[#34d399]"></i>
+                            ${role.title}
+                        </h2>
+                        ${role.subtitle ? `<p class="text-lg font-medium text-gray-300">${role.subtitle}</p>` : ''}
+                        <p class="mt-2 text-gray-400 text-sm">${role.description}</p>
+                    </div>
                 </div>
-            </div>
-        `).join('');
+            `;
+        }).join('');
 
         return `
             <header class="mb-12 text-center">
@@ -259,38 +426,66 @@
             </footer>
         `;
     }
+    
+    /**
+     * Generates the horizontal summary timeline using a responsive Flexbox layout 
+     * with rotated labels to save space.
+     */
+    function createHorizontalTimeline(currentRoleId) {
+        // Reverse the roles array to display oldest (role-1) on the left to newest (role-11) on the right.
+        const chronologicalRoles = [...roles].reverse(); 
+
+        const chartPoints = chronologicalRoles.map(role => {
+            const isActive = role.id === currentRoleId;
+            // Clean up titles for the summary view
+            const title = role.title.replace(/ *\([^)]*\) */g, "").trim(); 
+            const year = role.years.split('-')[0].trim();
+            
+            return `
+                <div class="chart-point">
+                    <!-- Marker on the Line -->
+                    <div 
+                        class="chart-marker ${isActive ? 'active' : ''}" 
+                        onclick="navigate('role', '${role.id}')"
+                    ></div>
+                    
+                    <!-- Rotated Label -->
+                    <div 
+                        class="chart-label ${isActive ? 'active' : ''}" 
+                        onclick="navigate('role', '${role.id}')"
+                    >
+                        <span class="label-date">${year}</span><br>
+                        <span class="font-medium">${title}</span>
+                    </div>
+                </div>
+            `;
+        }).join('');
+
+        return `
+            <div class="horizontal-timeline-chart w-full">
+                ${chartPoints}
+            </div>
+        `;
+    }
 
     // Generates the HTML for a specific role detail view
     function createDetailView(role) {
-        let borderColorClass;
-        let labelColorClass;
+        // Find the index of the role to get the correct color
+        // The index is based on the original roles array (newest first) but used only for coloring.
+        const index = roles.findIndex(r => r.id === role.id);
+        const color = RAINBOW_COLORS[index % RAINBOW_COLORS.length];
         
-        // Map theme to Tailwind classes
-        switch (role.theme) {
-            case 'leader':
-                borderColorClass = 'border-red-500';
-                labelColorClass = 'text-red-400';
-                break;
-            case 'global':
-                borderColorClass = 'border-blue-500';
-                labelColorClass = 'text-blue-400';
-                break;
-            case 'pause':
-                borderColorClass = 'border-gray-500';
-                labelColorClass = 'text-gray-400';
-                break;
-            case 'foundation':
-            default:
-                borderColorClass = 'border-indigo-500';
-                labelColorClass = 'text-indigo-400';
-                break;
-        }
-
+        // Define border and text classes dynamically
+        const borderColorClass = color.border;
+        const labelColorClass = color.text;
 
         const detailsList = role.details.map(detail => `<li class="mb-2 text-gray-300">${detail}</li>`).join('');
 
         return `
             <div class="my-8">
+                <!-- Horizontal Timeline Chart -->
+                ${createHorizontalTimeline(role.id)}
+
                 <button 
                     onclick="navigate('home')" 
                     class="flex items-center text-gray-300 hover:text-[#34d399] transition mb-8 px-4 py-2 rounded-lg border border-gray-600 hover:border-[#34d399]"
@@ -301,7 +496,11 @@
                 
                 <div class="detail-card border-l-8 ${borderColorClass}">
                     <p class="text-sm font-semibold uppercase ${labelColorClass} mb-1">${role.label} (${role.years})</p>
-                    <h1 class="text-4xl font-extrabold mb-2 text-[#34d399]">${role.title}</h1>
+                    <h1 class="text-4xl font-extrabold mb-2 text-[#34d399] flex items-center">
+                        <!-- Placeholder Logo - Always theme green -->
+                        <i data-lucide="line-chart" class="w-8 h-8 mr-3 text-[#34d399]"></i> 
+                        ${role.title}
+                    </h1>
                     ${role.subtitle ? `<h3 class="text-xl font-medium text-gray-400 mb-6">${role.subtitle}</h3>` : ''}
 
                     <div class="h-1 w-full bg-gray-700 my-6 rounded-full"></div>
@@ -332,18 +531,26 @@
         app.innerHTML = '';
         
         if (!hash || hash === 'home') {
+            // Reset container class for the main timeline view
+            app.classList.add('timeline-container');
+            app.classList.remove('max-w-7xl', 'w-full', 'px-4');
             app.innerHTML = createTimelineView();
         } else if (hash.startsWith('role/')) {
             const roleId = hash.split('/')[1];
             const role = roles.find(r => r.id === roleId);
             
             if (role) {
+                // Ensure the container is wider for the horizontal timeline chart
+                app.classList.remove('timeline-container');
+                app.classList.add('max-w-7xl', 'w-full', 'px-4'); 
                 app.innerHTML = createDetailView(role);
             } else {
                 app.innerHTML = `<div class="text-center text-red-500 text-2xl my-20">Error: Role not found. <button onclick="navigate('home')" class="text-blue-400 underline">Go Home</button></div>`;
             }
         } else {
              // Default to home if hash is unrecognized
+             app.classList.add('timeline-container');
+             app.classList.remove('max-w-7xl', 'w-full', 'px-4');
              app.innerHTML = createTimelineView();
         }
 
